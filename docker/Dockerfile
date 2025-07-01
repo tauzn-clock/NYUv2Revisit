@@ -14,16 +14,20 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y \
-        build-essential \
-        cmake \
-        git \
-        wget \
-        curl \
-        vim \
-        gdb \
-        lldb \
-        clang \
-        && apt-get clean && \
-        rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    curl \
+    vim \
+    gdb \
+    lldb \
+    clang \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/tauzn-clock/NYUv2Revisit
+
+WORKDIR /NYUv2Revisit
+RUN pip3 install -r ./requirements.txt
