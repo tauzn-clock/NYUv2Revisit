@@ -1,0 +1,3 @@
+[submodule "depthInpainting"]
+	path = depthInpainting
+	url = https://github.com/tauzn-clock/depthInpainting
