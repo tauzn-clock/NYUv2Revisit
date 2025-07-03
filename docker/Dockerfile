@@ -27,6 +27,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y \
+    libeigen3-dev \
+    libopencv-dev
+
 RUN git clone https://github.com/tauzn-clock/NYUv2Revisit
 
 WORKDIR /NYUv2Revisit
