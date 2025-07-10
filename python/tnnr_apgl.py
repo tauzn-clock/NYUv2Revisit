@@ -9,6 +9,8 @@ def tnnr_apgl(ori, mask, R, l):
     Bt = Bt[:R, :]
     AB = A @ Bt
     
+    # The value of t does not affect convergence, 
+    # what matters more is the sequence of t, that is needed to satisfy convergence
     t = 1.0
     X = ori.copy()
     Y = AB.copy()
