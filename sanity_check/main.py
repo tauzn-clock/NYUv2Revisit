@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 img = Image.open("/scratchdata/processed/alcove2/depth/0.png")
 gray = np.array(img)
 
-gray = gray[50:-50, 50:-50]  # Crop the image to remove borders
+#gray = gray[50:-50, 50:-50]  # Crop the image to remove borders
 
 plt.imsave("gray.png", gray, cmap='gray')
 
@@ -37,8 +37,25 @@ plt.imsave("reconstructed_gray.png", X_reconstructed, cmap='gray')
 X_reconstructed = X_reconstructed.astype(np.int16)
 print(X_reconstructed.max(), X_reconstructed.min())
 # Histogram of the reconstructed image
+plt.clf()
 plt.hist(X_reconstructed.ravel(), bins=(X_reconstructed.max() - X_reconstructed.min())//20, range=(X_reconstructed.min(), X_reconstructed.max()), color='black')
 plt.title("Histogram of Reconstructed Image")
 plt.xlabel("Pixel Intensity")
 plt.ylabel("Frequency")
 plt.savefig("histogram_reconstructed.png")
+
+from tnnr_apgl import tnnr_apgl
+
+X_apgl = tnnr_apgl(gray, mask, R=10, l=0.01)
+
+plt.imsave("apgl_reconstructed.png", X_apgl, cmap='gray')
+
+X_apgl = X_apgl.astype(np.int16)
+print(X_apgl.max(), X_apgl.min())
+# Histogram of the APGL reconstructed image
+plt.clf()
+plt.hist(X_apgl.ravel(), bins=(X_apgl.max() - X_apgl.min())//20, range=(X_apgl.min(), X_apgl.max()), color='black')
+plt.title("Histogram of APGL Reconstructed Image")
+plt.xlabel("Pixel Intensity")
+plt.ylabel("Frequency")
+plt.savefig("histogram_apgl_reconstructed.png")
