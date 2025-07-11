@@ -22,20 +22,19 @@ for f in files:
     mask_path = f[1][:-15] + "normal_" + f[1][-9:]
     
     rgb = Image.open(os.path.join(ORIGIN_DIR, rgb_path))
-    rgb.crop((43, 45, 608, 472))
-    
+    rgb = rgb.crop((43, 45, 608, 472))
     save_path = os.path.join(DEST_DIR, rgb_path)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     rgb.save(os.path.join(DEST_DIR, rgb_path))
     
     depth = Image.open(os.path.join(ORIGIN_DIR, depth_path))
-    depth.crop((43, 45, 608, 472))
+    depth = depth.crop((43, 45, 608, 472))
     save_path = os.path.join(DEST_DIR, depth_path)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     depth.save(os.path.join(DEST_DIR, depth_path))
     
     normal = Image.open(os.path.join(ORIGIN_DIR, mask_path))
-    normal.crop((43, 45, 608, 472))
+    normal = normal.crop((43, 45, 608, 472))
     save_path = os.path.join(DEST_DIR, mask_path)
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     normal.save(os.path.join(DEST_DIR, mask_path))
