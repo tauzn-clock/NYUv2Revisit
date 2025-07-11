@@ -15,7 +15,7 @@ def tnnr_apgl(ori, mask, R, l):
     X = ori.copy()
     Y = AB.copy()
     
-    pbar = tqdm(range(200), desc="APGL Iterations")
+    pbar = tqdm(range(1000), desc="APGL Iterations")
     for i in pbar:
         # Update X
         Xlast = X.copy()
