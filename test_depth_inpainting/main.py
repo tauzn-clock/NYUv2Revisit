@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEPTH_INPAINTING = "/NYUv2Revisit/depthInpainting/build/depthInpainting"
-DEPTH_IMG_PATH = "/scratchdata/processed/alcove2/depth/10.png"
+DEPTH_IMG_PATH = os.path.join(FILE_DIR, "crop.png")
+DEPTH_IMG_PATH = "/scratchdata/nyu_plane/depth/2.png"
+#DEPTH_IMG_PATH = "/scratchdata/processed/alcove2/depth/0.png"
 MASK_IMG_PATH = os.path.join(FILE_DIR, "mask.png")
 OUTPUT_IMG_PATH = os.path.join(FILE_DIR, "out.png")
 
@@ -20,10 +22,10 @@ mask = depth != 0
 print(mask.max(), mask.min())
 plt.imsave(MASK_IMG_PATH, mask, cmap='gray')
 
-subprocess.run([DEPTH_INPAINTING, "L", DEPTH_IMG_PATH, MASK_IMG_PATH, OUTPUT_IMG_PATH])
+subprocess.run([DEPTH_INPAINTING, "TNNR_ADDM", DEPTH_IMG_PATH, MASK_IMG_PATH, OUTPUT_IMG_PATH])
 
 # Color output
 out = Image.open(OUTPUT_IMG_PATH)
 out = np.array(out)
-plt.imsave(os.path.join(FILE_DIR,"out_color.png"), out)
+plt.imsave(os.path.join(FILE_DIR,"out_color.png"), out, cmap='gray')
 
