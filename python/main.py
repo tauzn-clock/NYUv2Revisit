@@ -14,7 +14,7 @@ print("Max depth: ", depth.max())
 
 mask = depth != 0
 
-reconstructed = tnnr_apgl(depth, mask, R=20, l=0.001)
+reconstructed = tnnr_apgl(depth, mask, R=20, l=0.005, eps=0.0001)
 print("Max reconstructed: ", reconstructed.max(), "Min reconstructed: ", reconstructed.min())
 reconstructed = np.clip(reconstructed, 0, reconstructed.max())
 plt.imsave("reconstructed_depth.png", reconstructed, cmap='gray')

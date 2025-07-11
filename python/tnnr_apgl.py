@@ -1,7 +1,9 @@
 import numpy as np
 from tqdm import tqdm
 
-def tnnr_apgl(ori, mask, R, l):
+def tnnr_apgl(ori, mask, R, l, eps=0.001):
+    input_norm = np.linalg.norm(ori*mask, 'fro')
+    
     # SVD decomposition
     
     A, S, Bt = np.linalg.svd(ori, full_matrices=False)
@@ -44,5 +46,9 @@ def tnnr_apgl(ori, mask, R, l):
             'Frobenius Norm': X_diff,
             'Objective Value': objective_value
         })    
+        
+        if X_diff / input_norm < eps:
+            print(f"Converged after {i+1} iterations.")
+            break
         
     return X
