@@ -1,10 +1,15 @@
 import os
+import sys
+
+sys.path.append("/NYUv2Revisit/python")
+
 import subprocess
 import numpy as np
 from PIL import Image
 import csv
 import tqdm
 from matplotlib import pyplot as plt
+from tnnr_apgl import tnnr_apgl
 
 CSV_FILE = "/NYUv2Revisit/crop_nyu/nyudepthv2_train_files_with_gt_dense.txt"
 ORIGIN_DIR = "/scratchdata/nyu_depth_crop/train"
@@ -18,7 +23,7 @@ with open(CSV_FILE, 'r') as f:
         files.append(row[0].split())
 
 DEPTH_INPAINTING = "/NYUv2Revisit/depthInpainting/build/depthInpainting"
-MASK_IMG_PATH = "mask.png"
+MASK_IMG_PATH = "0" #"mask.png"
 
 for INDEX in tqdm.tqdm(range(len(files))):
     DEPTH_IMG_PATH = os.path.join(ORIGIN_DIR, files[INDEX][1])
@@ -30,8 +35,9 @@ for INDEX in tqdm.tqdm(range(len(files))):
     depth = np.array(depth, dtype=np.float32)
     print(depth.max(), depth.min())
 
-    mask = depth != 0
-    print(mask.max(), mask.min())
-    plt.imsave(MASK_IMG_PATH, mask, cmap='gray')
-
-    subprocess.run([DEPTH_INPAINTING, "TNNR_ADDM", DEPTH_IMG_PATH, MASK_IMG_PATH, OUTPUT_IMG_PATH])
+    #subprocess.run([DEPTH_INPAINTING, "TNNR_APGL", DEPTH_IMG_PATH, MASK_IMG_PATH, OUTPUT_IMG_PATH])
+    mask = depth > 0
+    output = tnnr_apgl(depth, mask, R=20, l=0.005, eps=0.01)
+    output = np.clip(output, 0, output.max())
+    output = Image.fromarray(output.astype(np.uint16))
+    output.save(OUTPUT_IMG_PATH)
