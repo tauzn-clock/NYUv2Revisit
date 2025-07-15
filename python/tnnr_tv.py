@@ -138,16 +138,23 @@ if __name__ == "__main__":
     
     rho = 1.0    
     _, S, _ = np.linalg.svd(depth, full_matrices=False)
-    lambda_nuc = 0.01 * S[0] / rho
+    lambda_nuc = 0.1 * S[0] / rho
     print("Lambda nuclear: ", lambda_nuc)
     
-    lambda_tv = 0
+    lambda_tv = 1e2
 
     output = tnnr_tv(depth, mask, lambda_tv=lambda_tv, lambda_nuc=lambda_nuc, rho=rho)
+    output = output.detach().numpy()
     print("Max reconstructed: ", output.max().item(), "Min reconstructed: ", output.min().item())
-    
+    print("Depth:", depth.max(), depth.min())
+
     import matplotlib.pyplot as plt
-    plt.imsave("reconstructed_depth_tv.png", output.detach().numpy(), cmap='gray')
+    plt.imsave("reconstructed_depth_tv.png", output, cmap='gray')
+    plt.imsave("original_depth.png", depth, cmap='gray')
+    
+    from metrics import evaluateMetrics
+    
+    evaluateMetrics(depth, output)
     
     import sys
     import os
@@ -161,8 +168,20 @@ if __name__ == "__main__":
     img = Image.open(RGB_IMG_PATH)
     img = np.array(img)
 
-    pts_3d = get_3d(output.detach().numpy(), [306.93, 306.89, 318.59, 198.38])
+    pts_3d = get_3d(output, [306.93, 306.89, 318.59, 198.38])
     
     pcd = img_over_pcd(pts_3d, img)
 
     o3d.visualization.draw_geometries([pcd])
+    
+    test = output.copy()
+    test[depth!=0] = depth[depth!=0]
+    
+    pts_3d = get_3d(test, [306.93, 306.89, 318.59, 198.38])
+    pcd = img_over_pcd(pts_3d, img)
+    o3d.visualization.draw_geometries([pcd])
+    
+    pts_3d = get_3d(depth, [306.93, 306.89, 318.59, 198.38])
+    pcd = img_over_pcd(pts_3d, img)
+    o3d.visualization.draw_geometries([pcd])
+    
