@@ -3,8 +3,6 @@ from PIL import Image
 import torch
 from tqdm import tqdm
 
-from tnnr_apgl import tnnr_apgl
-
 def TV_NORM(X):
     X_LEFT = X[:-1, :] - X[1:, :]
     X_RIGHT = X[1:, :] - X[:-1, :]
@@ -33,14 +31,23 @@ def iter_U(M, Y, ori, mask, rho, lambda_tv):
     # Gradient descent with U to minimize the objective function
     
     lr = 0.01
+    U_fro_prev = torch.inf
+    pbar = tqdm(range(2000))
     
-    for i in range(100):
+    for i in pbar:
         loss = objective_function(U, ori, mask, lambda_tv)
         loss.backward()
         with torch.no_grad():
             U -= lr * U.grad
             U.grad.zero_()
-            
+        
+        U_fro = torch.linalg.norm(U, ord='fro').item()
+        pbar.set_description(f"Loss: {loss.item():.4f}, U: {U_fro:.4f}")
+
+        if (abs(U_fro - U_fro_prev) < 1):
+            break
+        U_fro_prev = U_fro
+        
     return U
     """
     U = ori
@@ -87,7 +94,6 @@ def iter_M(U, Y, rho, lambda_nuc):
     X = (U + Y)
     A, S, Bt = torch.linalg.svd(X, full_matrices=False)
     S = torch.maximum(S - lambda_nuc/rho, torch.zeros_like(S))
-    print(S.max(), S.min())
     M = A @ torch.diag(S) @ Bt
     
     return M
@@ -109,24 +115,54 @@ def tnnr_tv(ori, mask, rho = 1.0, lambda_tv = 40, lambda_nuc=1.0):
         
         return obj_1 + obj_2 + obj_3
     
-    for _ in range(40):
+    obj_prev = torch.inf
+    
+    for _ in range(10):
         U = iter_U(M, Y, ori, mask, rho, lambda_tv)
         M = iter_M(U, Y, rho, lambda_nuc)
         Y = iter_Y(Y, U, M)
         
-        print(objective_function(U, ori, mask, lambda_tv, lambda_nuc).item())
-
+        obj = objective_function(U, ori, mask, lambda_tv, lambda_nuc).item()
+        if (abs(obj - obj_prev)/obj_prev < 1e-3):
+            break
+        print(obj)
     return U
 if __name__ == "__main__":
-    DEPTH_IMG_PATH = "/scratchdata/processed/alcove2/depth/0.png"
+    RGB_IMG_PATH = "/scratchdata/nyu_depth_crop/train/bathroom_0039/rgb_00054.jpg"
+    DEPTH_IMG_PATH = "/scratchdata/nyu_depth_crop/train/bathroom_0039/sync_depth_00054.png"
 
     depth = Image.open(DEPTH_IMG_PATH)
     depth = np.array(depth, dtype=np.float32)
     
     mask = depth != 0
     
-    output = tnnr_tv(depth, mask, lambda_tv=1000, lambda_nuc=1000)
+    rho = 1.0    
+    _, S, _ = np.linalg.svd(depth, full_matrices=False)
+    lambda_nuc = 0.01 * S[0] / rho
+    print("Lambda nuclear: ", lambda_nuc)
+    
+    lambda_tv = 0
+
+    output = tnnr_tv(depth, mask, lambda_tv=lambda_tv, lambda_nuc=lambda_nuc, rho=rho)
     print("Max reconstructed: ", output.max().item(), "Min reconstructed: ", output.min().item())
     
     import matplotlib.pyplot as plt
     plt.imsave("reconstructed_depth_tv.png", output.detach().numpy(), cmap='gray')
+    
+    import sys
+    import os
+    
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    from test_depth_inpainting.visualise import img_over_pcd
+    from test_depth_inpainting.process_depth import get_3d
+    import open3d as o3d
+    
+    img = Image.open(RGB_IMG_PATH)
+    img = np.array(img)
+
+    pts_3d = get_3d(output.detach().numpy(), [306.93, 306.89, 318.59, 198.38])
+    
+    pcd = img_over_pcd(pts_3d, img)
+
+    o3d.visualization.draw_geometries([pcd])
