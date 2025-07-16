@@ -44,7 +44,7 @@ def iter_U(M, Y, ori, mask, rho, lambda_tv):
         U_fro = torch.linalg.norm(U, ord='fro').item()
         pbar.set_description(f"Loss: {loss.item():.4f}, U: {U_fro:.4f}")
 
-        if (abs(U_fro - U_fro_prev) < 1):
+        if (abs(U_fro - U_fro_prev) < 0.1):
             break
         U_fro_prev = U_fro
         
@@ -117,7 +117,7 @@ def tnnr_tv(ori, mask, rho = 1.0, lambda_tv = 40, lambda_nuc=1.0):
     
     obj_prev = torch.inf
     
-    for _ in range(10):
+    for _ in range(100):
         U = iter_U(M, Y, ori, mask, rho, lambda_tv)
         M = iter_M(U, Y, rho, lambda_nuc)
         Y = iter_Y(Y, U, M)
@@ -128,8 +128,8 @@ def tnnr_tv(ori, mask, rho = 1.0, lambda_tv = 40, lambda_nuc=1.0):
         print(obj)
     return U
 if __name__ == "__main__":
-    RGB_IMG_PATH = "/scratchdata/nyu_depth_crop/train/bathroom_0039/rgb_00054.jpg"
-    DEPTH_IMG_PATH = "/scratchdata/nyu_depth_crop/train/bathroom_0039/sync_depth_00054.png"
+    RGB_IMG_PATH = "/scratchdata/InformationOptimisationCrop/rgb/0.png"
+    DEPTH_IMG_PATH = "/scratchdata/InformationOptimisationCrop/depth/0.png"
 
     depth = Image.open(DEPTH_IMG_PATH)
     depth = np.array(depth, dtype=np.float32)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     lambda_nuc = 0.1 * S[0] / rho
     print("Lambda nuclear: ", lambda_nuc)
     
-    lambda_tv = 1e2
+    lambda_tv = 4e0
 
     output = tnnr_tv(depth, mask, lambda_tv=lambda_tv, lambda_nuc=lambda_nuc, rho=rho)
     output = output.detach().numpy()
