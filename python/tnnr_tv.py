@@ -3,6 +3,8 @@ from PIL import Image
 import torch
 from tqdm import tqdm
 
+from tnnr_apgl import tnnr_apgl_torch
+
 def TV_NORM(X):
     X_LEFT = X[:-1, :] - X[1:, :]
     #X_RIGHT = X[1:, :] - X[:-1, :]
@@ -92,11 +94,15 @@ def iter_U(M, Y, ori, mask, rho, lambda_tv):
 
 def iter_M(U, Y, rho, lambda_nuc):
     X = (U + Y)
+    #mask = torch.ones_like(X)
+    #return tnnr_apgl_torch(X, mask, R=20, l=rho/lambda_nuc, eps=0.01)
+    
     A, S, Bt = torch.linalg.svd(X, full_matrices=False)
     S = torch.maximum(S - lambda_nuc/rho, torch.zeros_like(S))
     M = A @ torch.diag(S) @ Bt
     
     return M
+    
     
 def iter_Y(Y, U, M):
     return Y + U - M
@@ -168,7 +174,7 @@ if __name__ == "__main__":
     img = Image.open(RGB_IMG_PATH)
     img = np.array(img)
 
-    pts_3d = get_3d(output, [306.93, 306.89, 318.59, 198.38])
+    pts_3d = get_3d(output, [518.8579, 518.8579, 282.5824, 208.7362])
     
     pcd = img_over_pcd(pts_3d, img)
 
@@ -177,11 +183,11 @@ if __name__ == "__main__":
     test = output.copy()
     test[depth!=0] = depth[depth!=0]
     
-    pts_3d = get_3d(test, [306.93, 306.89, 318.59, 198.38])
+    pts_3d = get_3d(test, [518.8579, 518.8579, 282.5824, 208.7362])
     pcd = img_over_pcd(pts_3d, img)
     o3d.visualization.draw_geometries([pcd])
     
-    pts_3d = get_3d(depth, [306.93, 306.89, 318.59, 198.38])
+    pts_3d = get_3d(depth, [518.8579, 518.8579, 282.5824, 208.7362])
     pcd = img_over_pcd(pts_3d, img)
     o3d.visualization.draw_geometries([pcd])
     
