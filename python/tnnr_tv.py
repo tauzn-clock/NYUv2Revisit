@@ -5,12 +5,12 @@ from tqdm import tqdm
 
 def TV_NORM(X):
     X_LEFT = X[:-1, :] - X[1:, :]
-    X_RIGHT = X[1:, :] - X[:-1, :]
+    #X_RIGHT = X[1:, :] - X[:-1, :]
     X_UP = X[:, :-1] - X[:, 1:]
-    X_DOWN = X[:, 1:] - X[:, :-1]
+    #X_DOWN = X[:, 1:] - X[:, :-1]
     
-    total = torch.sum(torch.abs(X_LEFT)) + torch.sum(torch.abs(X_RIGHT)) + torch.sum(torch.abs(X_UP)) + torch.sum(torch.abs(X_DOWN))
-    total /= 2.0
+    total = torch.sum(torch.abs(X_LEFT)) + torch.sum(torch.abs(X_UP))
+    #total /= 2.0
     
     return total
 
@@ -117,7 +117,7 @@ def tnnr_tv(ori, mask, rho = 1.0, lambda_tv = 40, lambda_nuc=1.0):
     
     obj_prev = torch.inf
     
-    for _ in range(100):
+    for _ in range(20):
         U = iter_U(M, Y, ori, mask, rho, lambda_tv)
         M = iter_M(U, Y, rho, lambda_nuc)
         Y = iter_Y(Y, U, M)
@@ -128,8 +128,8 @@ def tnnr_tv(ori, mask, rho = 1.0, lambda_tv = 40, lambda_nuc=1.0):
         print(obj)
     return U
 if __name__ == "__main__":
-    RGB_IMG_PATH = "/scratchdata/InformationOptimisationCrop/rgb/0.png"
-    DEPTH_IMG_PATH = "/scratchdata/InformationOptimisationCrop/depth/0.png"
+    RGB_IMG_PATH = "/scratchdata/nyu_plane_crop/rgb/0.png"
+    DEPTH_IMG_PATH = "/scratchdata/nyu_plane_crop/depth/0.png"
 
     depth = Image.open(DEPTH_IMG_PATH)
     depth = np.array(depth, dtype=np.float32)
@@ -138,10 +138,10 @@ if __name__ == "__main__":
     
     rho = 1.0    
     _, S, _ = np.linalg.svd(depth, full_matrices=False)
-    lambda_nuc = 0.1 * S[0] / rho
+    lambda_nuc = 0.01 * S[0] / rho
     print("Lambda nuclear: ", lambda_nuc)
     
-    lambda_tv = 4e0
+    lambda_tv = 1e0
 
     output = tnnr_tv(depth, mask, lambda_tv=lambda_tv, lambda_nuc=lambda_nuc, rho=rho)
     output = output.detach().numpy()
