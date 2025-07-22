@@ -54,17 +54,18 @@ if __name__ == "__main__":
     from PIL import Image
     from process_depth import get_3d
 
-    IMG_PATH = "/scratchdata/InformationOptimisation/rgb/0.png"
-    #DEPTH_PATH = "/scratchdata/InformationOptimisation/depth/0.png"
-    DEPTH_PATH = "/NYUv2Revisit/test_depth_inpainting/0_APGL.png"
+    IMG_PATH = "/scratchdata/nyu_depth_crop/train/bedroom_0130/rgb_00000.jpg"
+    DEPTH_PATH = "/scratchdata/nyu_depth_tnnr_apgl/train/bedroom_0130/sync_depth_00000.png"
 
     img = Image.open(IMG_PATH)
     img = np.array(img)
     depth = Image.open(DEPTH_PATH)
     depth = np.array(depth, dtype=np.float32) / 1000.0
 
-    pts_3d = get_3d(depth, [518.8579, 518.8579, 325.5824, 253.7362])
-
+    #pts_3d = get_3d(depth, [518.8579, 518.8579, 325.5824, 253.7362])
+    #pts_3d = get_3d(depth, [518.8579, 518.8579, 282.5824, 208.7362])
+    pts_3d = get_3d(depth, [306.93, 306.89, 318.59, 198.38])
+    
     pcd = img_over_pcd(pts_3d, img)
 
     o3d.visualization.draw_geometries([pcd])
