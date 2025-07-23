@@ -57,7 +57,7 @@ def tnnr_apgl(ori, mask, R, l, eps=0.01):
         # Check objective function value
         nuclear_norm = np.sum(sigma)
         trace = np.trace(A.T @ X @ Bt.T)
-        fro_norm = np.linalg.norm((X - ori) * mask, 'fro')
+        fro_norm = np.linalg.norm((X - ori)[mask!=0], ord=2)
         
         objective_value = nuclear_norm + trace + (l/2) * fro_norm**2
         pbar.set_postfix({
